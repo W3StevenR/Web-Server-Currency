@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado da Solicitação</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* Estilos adicionais podem ser adicionados aqui */
+    .card {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <!-- CARTÃO COM INFORMAÇÕES GERAIS -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Informações Gerais</h5>
+        <p class="card-text">
+          <strong>Código:</strong> <span id="codigo"></span><br>
+          <strong>Valor:</strong> <span id="valor"></span><br>
+          <strong>Máxima:</strong> <span id="maxima"></span><br>
+          <strong>Mínima:</strong> <span id="minima"></span><br>
+          <strong>Variação:</strong> <span id="variacao"></span><br>
+          <strong>Data de Última Atualização:</strong> <span id="data_atualizacao"></span><br>
+        </p>
+        <button class="btn btn-primary" onclick="atualizarDados()">Atualizar</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO COM GRÁFICOS -->
+    <div class="row">
+      <div class="col">
+        <img src="..\assets\grafico1.png" alt="Gráfico 1" class="img-fluid">
+      </div>
+      <div class="col">
+        <img src="" alt="Gráfico 2" class="img-fluid">
+      </div>
+      <div class="col">
+        <img src="" alt="Gráfico 3" class="img-fluid">
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Função para atualizar os dados
+    function atualizarDados() {
+      // Faz uma requisição AJAX para a rota '/get_data' do Flask passando a moeda que o usuario selecionou como parametro
+      fetch('/get_data?moeda={{ moeda }}')
+        .then(response => response.json()) // converte para json o valor recebido
+        .then(data => {
+          // Atualiza os dados na página
+          document.getElementById('codigo').innerText = data.code;
+          document.getElementById('valor').innerText = "R$ " + data.bid;
+          document.getElementById('maxima').innerText = "R$ " + data.high;
+          document.getElementById('minima').innerText = "R$ " + data.low;
+          document.getElementById('variacao').innerText = "R$ " + data.varBid;
+          document.getElementById('data_atualizacao').innerText = data.create_date;
+          });
+        }
+
+    // Chamamos a função para carregar os dados quando a página é carregada
+    window.onload = atualizarDados;
+
+    // Chama a função fetchData a cada 60 segundos
+    setInterval(atualizarDados, 60000);
+  </script>
+</body>

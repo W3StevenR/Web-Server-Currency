@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Solicitação</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>Formulário de Solicitação</h2>
+    <form action="/enviar" method="post">
+      <div class="form-group">
+        <label for="moeda">Seleção de Moeda:</label>
+        <select class="form-control" id="moeda" name="moeda">
+          <option value="USD-BRL">USDBRL</option>
+          <option value="EUR-BRL">EURBRL</option>
+          <option value="BTC-BRL">BTCBRL</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="data_inicio">Data de Início:</label>
+        <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+      </div>
+      <div class="form-group">
+        <label for="data_fim">Data de Fim:</label>
+        <input type="date" class="form-control" id="data_fim" name="data_fim">
+      </div>
+      <div class="form-group">
+        <label for="valor_alerta">Valor de Alerta:</label>
+        <input type="number" class="form-control" id="valor_alerta" name="valor_alerta" step="0.01">
+      </div>
+      <button type="submit" class="btn btn-success">Enviar Solicitação</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>
