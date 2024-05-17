@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify , request
 import requests
+import xml.etree.ElementTree as ET
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -20,9 +22,37 @@ def realizaReqCambio(moeda):
         print("Erro ao fazer a requisição:", response.status_code)
 
 # todo:
-def retornaHistoricoMoeda(moeda , datainicio , datafim):
+def retornaHistoricoMoeda():
+    response = requests.get('https://economia.awesomeapi.com.br/xml/USD-BRL/20?start_date=20200201&end_date=20200829')
+    root = ET.fromstring(response.content)
+    # Listas para armazenar os dados
+    varBids = []
+    bids = []
+    timestamps = []
+
+    # Iterar sobre cada item e extrair os dados especificos
+    for item in root.findall('item'):
+        varBid = item.find('varBid').text
+        bid = item.find('bid').text
+        timestamp = item.find('timestamp').text
+
+        varBids.append(varBid)
+        bids.append(bid)
+        timestamps.append(timestamp)
+
+    # Criar um DataFrame 
+    df = pd.DataFrame({
+        'varBid': varBids,
+        'bid': bids,
+        'timestamp': timestamps
+    })
+
+    # Exibir o DataFrame
+    print(df)
+
+
     # gerando o DataFrame com os dados
-    return 1
+    return df
 
 # todo:
 def plotaSalvaGraficos(df):
@@ -69,7 +99,7 @@ def enviar():
     print(requisicao)
 
     # Retorna um DataFrame com o histórico que o usuario solicitou
-    dadosTxCambio = retornaHistoricoMoeda(moeda, data_inicio, data_fim)
+    dadosTxCambio = retornaHistoricoMoeda()
 
     # Salva os gráficos
     plotaSalvaGraficos(dadosTxCambio)
