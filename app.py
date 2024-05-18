@@ -1,7 +1,9 @@
+from tokenize import String
 from flask import Flask, render_template, jsonify , request
 import requests
 import xml.etree.ElementTree as ET
 import pandas as pd
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -11,6 +13,20 @@ app = Flask(__name__)
 # 3) Quando o usuário apertar o botão "atualizar" deve fazer outra requisição
 
 # Funcao que realiza uma requisicao de API baseado na escolha de uma moeda:
+
+
+def calcular_dias_periodo(data_inicio, data_fim):
+    # Converter as strings de data no formato dd/mm/yyyy para objetos datetime
+    inicio = datetime.strptime(data_inicio, f'%d/%m/%Y')
+    fim = datetime.strptime(data_fim, f'%d/%m/%Y')
+
+    # Calcular a diferença entre as duas datas
+    diferenca = fim - inicio
+
+    # Retornar o número de dias no período
+    return diferenca.days
+
+
 def realizaReqCambio(moeda):
     # Faz uma requisição para a API
     response = requests.get(f'https://economia.awesomeapi.com.br/last/{moeda}')
@@ -22,9 +38,10 @@ def realizaReqCambio(moeda):
         print("Erro ao fazer a requisição:", response.status_code)
 
 # todo:
-def retornaHistoricoMoeda():
-    response = requests.get('https://economia.awesomeapi.com.br/xml/USD-BRL/20?start_date=20200201&end_date=20200829')
+def retornaHistoricoMoeda(moeda, quantd_dias):
+    response = requests.get(f'https://economia.awesomeapi.com.br/xml/daily/{moeda}/{quantd_dias}')
     root = ET.fromstring(response.content)
+    
     # Listas para armazenar os dados
     varBids = []
     bids = []
@@ -34,7 +51,8 @@ def retornaHistoricoMoeda():
     for item in root.findall('item'):
         varBid = item.find('varBid').text
         bid = item.find('bid').text
-        timestamp = item.find('timestamp').text
+        timestamp_antes = item.find('timestamp').text 
+        timestamp =datetime.utcfromtimestamp(int(timestamp_antes))
 
         varBids.append(varBid)
         bids.append(bid)
@@ -50,8 +68,12 @@ def retornaHistoricoMoeda():
     # Exibir o DataFrame
     print(df)
 
+    # Caminho do arquivo de texto
+    
 
-    # gerando o DataFrame com os dados
+    # Salvar o DataFrame em um arquivo de texto
+    df.to_csv('dados.txt', sep='\t', index=False)  # sep='\t' define o separador como tabulação
+
     return df
 
 # todo:
@@ -85,7 +107,9 @@ def enviar():
     # Pegar valor enviados no formulario
     moeda = request.form['moeda']
     data_inicio = request.form['data_inicio']
-    data_fim = request.form['data_fim']
+    data_inicio = datetime.strptime(data_inicio,'%Y-%m-%d').strftime('%d/%m/%Y')
+    data_fim = datetime.now().strftime('%d/%m/%Y') #INPUT ESTATICO
+
     valor_alerta = float(request.form['valor_alerta'])
 
     # TODO:
@@ -99,7 +123,7 @@ def enviar():
     print(requisicao)
 
     # Retorna um DataFrame com o histórico que o usuario solicitou
-    dadosTxCambio = retornaHistoricoMoeda()
+    dadosTxCambio = retornaHistoricoMoeda(moeda, calcular_dias_periodo(data_inicio, data_fim))
 
     # Salva os gráficos
     plotaSalvaGraficos(dadosTxCambio)

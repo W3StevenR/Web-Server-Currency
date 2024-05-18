@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../static/styles.css">
+    <title>Data Atual em HTML</title>
+    <!-- Importar Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 </head>
 <body>
-    <div>
-        <h1>Página test.html</h1>
-    </div>
+    <p>A data atual é: <span id="dataAtual"></span></p>
 
-    <script src="../static/script.js"></script>
+    <script>
+        // Usar Moment.js para inserir a data atual
+        document.getElementById('dataAtual').innerText = moment().format('L');
+    </script>
+    
 </body>
 </html>
