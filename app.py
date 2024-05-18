@@ -51,8 +51,8 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
     for item in root.findall('item'):
         varBid = item.find('varBid').text
         bid = item.find('bid').text
-        timestamp_antes = item.find('timestamp').text 
-        timestamp =datetime.utcfromtimestamp(int(timestamp_antes))
+        timestamp_cod = item.find('timestamp').text 
+        timestamp = datetime.utcfromtimestamp(int(timestamp_cod))
 
         varBids.append(varBid)
         bids.append(bid)
@@ -67,10 +67,6 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
 
     # Exibir o DataFrame
     print(df)
-
-    # Caminho do arquivo de texto
-    
-
     # Salvar o DataFrame em um arquivo de texto
     df.to_csv('dados.txt', sep='\t', index=False)  # sep='\t' define o separador como tabulação
 
