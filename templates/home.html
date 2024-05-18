@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Formulário de Solicitação</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 </head>
 <body>
   <div class="container mt-5">
@@ -17,15 +18,45 @@
           <option value="BTC-BRL">BTCBRL</option>
         </select>
       </div>
+
       <div class="form-group">
+
         <label for="data_inicio">Data de Início:</label>
-        <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+        <input type="date" class="form-control" id="data_inicio" name=data_inicio>
+
+        <!--Script para limitar o calendario em ate 360 dias atras --> 
+        <script>
+          //Data atual em formato yyyy/mm/dd e horas. [0] traz apenas a data
+          var dataAtualISO = new Date().toISOString().split('T')[0];
+          
+          // Define a data máxima como a data atual
+          document.getElementById('data_inicio').max = dataAtualISO;
+          
+          // Calcula a data mínima (360 dias atrás da data máxima)
+          var dataMinima = new Date();
+          dataMinima.setDate(dataMinima.getDate() - 360);
+          var dataMinimaISO = dataMinima.toISOString().split('T')[0];
+          
+          // Define a data mínima no formato ISO, passando para o input 
+          document.getElementById('data_inicio').min = dataMinimaISO;
+        </script>
+
       </div>
+      
       <div class="form-group">
-        <label for="data_fim">Data de Fim:</label>
-        <input type="date" class="form-control" id="data_fim" name="data_fim">
+        
+        <label for="data">Data de Fim:</label>
+        <input type="text" class="form-control" id="dataFim" name="data_fim" disabled >
+        <!--Script para printar a data atual no segundo Input desabilitado--> 
+        <script>
+          var dataMaxima = new Date().toLocaleDateString('pt-BR');
+          document.getElementById('dataFim').placeholder = dataMaxima.split('T')[0];
+        </script>
+
       </div>
-      <div class="form-group">
+
+
+      <div class="form-group"><div class="form-group">
         <label for="valor_alerta">Valor de Alerta:</label>
         <input type="number" class="form-control" id="valor_alerta" name="valor_alerta" step="0.01">
       </div>
@@ -33,6 +64,8 @@
     </form>
   </div>
 
+ 
+  
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
