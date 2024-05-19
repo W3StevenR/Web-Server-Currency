@@ -1,3 +1,4 @@
+from decimal import Decimal
 from tokenize import String
 from flask import Flask, render_template, jsonify , request
 import requests
@@ -43,23 +44,32 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
     root = ET.fromstring(response.content)
     
     # Listas para armazenar os dados
+    list_high = []
+    list_low = []
     varBids = []
     bids = []
     timestamps = []
 
     # Iterar sobre cada item e extrair os dados especificos
     for item in root.findall('item'):
+
+        high = float(item.find('high').text)
+        low = float(item.find('low').text)
         varBid = item.find('varBid').text
         bid = item.find('bid').text
         timestamp_cod = item.find('timestamp').text 
         timestamp = datetime.utcfromtimestamp(int(timestamp_cod))
 
+        list_high.append(high)
+        list_low.append(low)
         varBids.append(varBid)
         bids.append(bid)
         timestamps.append(timestamp)
 
     # Criar um DataFrame 
     df = pd.DataFrame({
+        'high':list_high,
+        'low':list_low,
         'varBid': varBids,
         'bid': bids,
         'timestamp': timestamps
