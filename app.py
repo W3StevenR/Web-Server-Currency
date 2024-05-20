@@ -1,10 +1,10 @@
-from decimal import Decimal
-from tokenize import String
 from flask import Flask, render_template, jsonify , request
 import requests
 import xml.etree.ElementTree as ET
-import pandas as pd
 from datetime import datetime, timedelta
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -82,9 +82,60 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
 
     return df
 
-# todo:
-def plotaSalvaGraficos(df):
-    # gera e salva os gráficos em forma de imagem
+
+def plotaSalvaGraficos(df, data_ini, data_fim):
+    # dataframe de exemplo
+    n = 8
+    # tamanho da figura em polegadas
+    fig = plt.figure(figsize=(n, n))
+
+    # "up" dataframe will store the stock_prices
+    # when the closing stock price is greater
+    # than or equal to the opening stock prices
+    df['bid'] = pd.to_numeric(df['bid'])
+    df['varBid'] = pd.to_numeric(df['varBid'])
+    up = df[df.high >= df.bid]
+
+    # "down" dataframe will store the df
+    # when the closing stock price is
+    # lesser than the opening stock prices
+    down = df[df.high < df.bid]
+
+    # When the stock prices have decreased, then it
+    # will be represented by blue color candlestick
+    col1 = 'red'
+
+    # When the stock prices have increased, then it
+    # will be represented by green color candlestick
+    col2 = 'green'
+
+    # Setting width of candlestick elements
+    width = .3
+    width2 = .03
+
+    # Plotting up prices of the stock
+    plt.bar(up.index, up.high - up.bid, width, bottom=up.bid, color=col1)
+    plt.bar(up.index, up.high - up.high, width2, bottom=up.high, color=col1)
+    plt.bar(up.index, up.low - up.bid, width2, bottom=up.bid, color=col1)
+
+    # Plotting down prices of the stock
+    plt.bar(down.index, down.high - down.bid, width, bottom=down.bid, color=col2)
+    plt.bar(down.index, down.high - down.bid, width2, bottom=down.bid, color=col2)
+    plt.bar(down.index, down.low - down.high, width2, bottom=down.high, color=col2)
+
+    # rotating the x-axis tick labels at 30degree
+    # towards right
+    plt.xticks(rotation=30, ha='right')
+
+    # displaying candlestick chart of stock data
+    # of a week
+
+    plt.plot(df)
+    # Save the figure to a BytesIO object
+    path_save = os.path.join("assets", "grafico1.png")
+
+    fig.savefig(path_save, format='png')
+
     return 1
 
 @app.route('/')
@@ -107,7 +158,7 @@ def get_data():
     else:
         print("Erro ao fazer a requisição:", response.status_code)
 
-# Rota principal que mostra a página "resulta.html"
+# ROTA PRINCIPAL que mostra a página "resulta.html"
 @app.route('/enviar', methods=['POST'])
 def enviar():
     # Pegar valor enviados no formulario
@@ -119,7 +170,7 @@ def enviar():
     valor_alerta = float(request.form['valor_alerta'])
 
     # TODO:
-    # Realiza Validação de dada:
+    # Realiza Validação de daTa:
     ## Codigo aqui
 
     # Realizar uma requisicao baseado em uma moeda escolhida
@@ -132,7 +183,7 @@ def enviar():
     dadosTxCambio = retornaHistoricoMoeda(moeda, calcular_dias_periodo(data_inicio, data_fim))
 
     # Salva os gráficos
-    plotaSalvaGraficos(dadosTxCambio)
+    plotaSalvaGraficos(dadosTxCambio, data_inicio, data_fim)
 
     # Ao renderizar a pagina "resultado.html" eu passo a variavel moeda como parametro , para que eu possa realizar a rota "/get_data"
     # usando como parâmetro para requisicao essa própria variavel "moeda" , salvando esse valor enquanto navego entre as paginas
