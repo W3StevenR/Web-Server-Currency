@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Resultado da Solicitação</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/styles.css">
+
   <style>
     /* Estilos adicionais podem ser adicionados aqui */
     .card {
@@ -14,10 +16,11 @@
 <body>
   <div class="container mt-5">
     <!-- CARTÃO COM INFORMAÇÕES GERAIS -->
-    <div class="card">
+    <div class="card" id="card_geral">
       <div class="card-body">
         <h5 class="card-title">Informações Gerais</h5>
         <p class="card-text">
+          <strong>Valor de Alerta:</strong> <span id="alerta"></span><br>
           <strong>Código:</strong> <span id="codigo"></span><br>
           <strong>Valor:</strong> <span id="valor"></span><br>
           <strong>Máxima:</strong> <span id="maxima"></span><br>
@@ -25,7 +28,7 @@
           <strong>Variação:</strong> <span id="variacao"></span><br>
           <strong>Data de Última Atualização:</strong> <span id="data_atualizacao"></span><br>
         </p>
-        <button class="btn btn-primary" onclick="atualizarDados()">Atualizar</button>
+        <button class="btn btn-primary btn-edit" onclick="atualizarDados()">Atualizar</button>
       </div>
     </div>
 
@@ -34,12 +37,12 @@
       <div class="col">
         <img src="..\assets\grafico1.png" alt="Gráfico 1" class="img-fluid">
       </div>
-      <div class="col">
+      <!-- <div class="col">
         <img src="" alt="Gráfico 2" class="img-fluid">
       </div>
       <div class="col">
         <img src="" alt="Gráfico 3" class="img-fluid">
-      </div>
+      </div> -->
     </div>
   </div>
 
@@ -55,18 +58,32 @@
         .then(data => {
           // Atualiza os dados na página
           document.getElementById('codigo').innerText = data.code;
+          document.getElementById('alerta').innerText = "R$ " + parseFloat( {{valor_alerta}} ) ;
           document.getElementById('valor').innerText = "R$ " + data.bid;
           document.getElementById('maxima').innerText = "R$ " + data.high;
           document.getElementById('minima').innerText = "R$ " + data.low;
           document.getElementById('variacao').innerText = "R$ " + data.varBid;
           document.getElementById('data_atualizacao').innerText = data.create_date;
-          });
+
+          // Verifica se o valor atual da cotacao é maior que o passado pelo usuario e mostra o alerta:
+          card = document.getElementById("card_geral");
+
+          if (parseFloat(data.bid) < parseFloat({{valor_alerta}}) ) {
+            // Como o valor da cotacao é maior que o que o usuário quer saber , mostre o alerta
+            alert("Valor da Cotação Ultrapassado");
+            card.classList.add("valor-abaixo");
+            } else {
+            card.classList.add("valor-acima");
+           }
+
+          }
+          );
         }
 
     // Chamamos a função para carregar os dados quando a página é carregada
     window.onload = atualizarDados;
 
-    // Chama a função fetchData a cada 60 segundos
-    setInterval(atualizarDados, 5000);
+    // Chama a função atualizarDados a cada 60 segundos
+    setInterval(atualizarDados, 60000);
   </script>
 </body>

@@ -8,14 +8,8 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Durante a execução do código , eu terei que atualizar no HTML 3 vezes (3 formas diferentes o card principal)
-# 1) Quando eu clica em "Enviar Solicitação" eu deve fazer uma requisição
-# 2) A cada 60s eu deve fazer outra requisição
-# 3) Quando o usuário apertar o botão "atualizar" deve fazer outra requisição
 
 # Funcao que realiza uma requisicao de API baseado na escolha de uma moeda:
-
-
 def calcular_dias_periodo(data_inicio, data_fim):
     # Converter as strings de data no formato dd/mm/yyyy para objetos datetime
     inicio = datetime.strptime(data_inicio, f'%d/%m/%Y')
@@ -38,7 +32,6 @@ def realizaReqCambio(moeda):
     else:
         print("Erro ao fazer a requisição:", response.status_code)
 
-# todo:
 def retornaHistoricoMoeda(moeda, quantd_dias):
     response = requests.get(f'https://economia.awesomeapi.com.br/xml/daily/{moeda}/{quantd_dias}')
     root = ET.fromstring(response.content)
@@ -75,19 +68,15 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
         'timestamp': timestamps
     })
 
-    # Exibir o DataFrame
-    print(df)
     # Salvar o DataFrame em um arquivo de texto
     df.to_csv('dados.txt', sep='\t', index=False)  # sep='\t' define o separador como tabulação
 
     return df
 
 
-def plotaSalvaGraficos(df, data_ini, data_fim):
-    # dataframe de exemplo
-    n = 8
+def plotaSalvaGraficos(df):
     # tamanho da figura em polegadas
-    fig = plt.figure(figsize=(n, n))
+    fig = plt.figure(figsize=(15, 6))
 
     # "up" dataframe will store the stock_prices
     # when the closing stock price is greater
@@ -146,19 +135,17 @@ def index():
 def get_data():
     # Pedir para o usuario passar um parametro na requisicao "?moeda=MOEDA" para que eu possa requisitar na API
     moeda = request.args.get('moeda')
-    print(moeda)
 
     # Faz uma requisição para a API
     response = requests.get(f'https://economia.awesomeapi.com.br/last/{moeda}')
     if response.status_code == 200:
         dados = response.json()
         moeda_formatada = moeda.replace("-", "")
-        print(dados[moeda_formatada])
         return dados[moeda_formatada]
     else:
         print("Erro ao fazer a requisição:", response.status_code)
-#ROTA À ASSETS recupera arquivos
 
+#Rota que recupera arquivos da pasta "assets"
 @app.route('/assets/<path:path>')
 def send_assets(path):
     return send_from_directory('assets', path)
@@ -174,25 +161,18 @@ def enviar():
 
     valor_alerta = float(request.form['valor_alerta'])
 
-    # TODO:
-    # Realiza Validação de daTa:
-    ## Codigo aqui
-
     # Realizar uma requisicao baseado em uma moeda escolhida
     requisicao = realizaReqCambio(moeda)
-
-    print(moeda , data_inicio , data_fim , valor_alerta)
-    print(requisicao)
 
     # Retorna um DataFrame com o histórico que o usuario solicitou
     dadosTxCambio = retornaHistoricoMoeda(moeda, calcular_dias_periodo(data_inicio, data_fim))
 
     # Salva os gráficos
-    plotaSalvaGraficos(dadosTxCambio, data_inicio, data_fim)
+    plotaSalvaGraficos(dadosTxCambio)
 
     # Ao renderizar a pagina "resultado.html" eu passo a variavel moeda como parametro , para que eu possa realizar a rota "/get_data"
     # usando como parâmetro para requisicao essa própria variavel "moeda" , salvando esse valor enquanto navego entre as paginas
-    return render_template("resultado.html" , moeda=moeda)
+    return render_template("resultado.html" , moeda=moeda , valor_alerta = valor_alerta)
 
 if __name__ == '__main__':
     app.run(debug=True)
