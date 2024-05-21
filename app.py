@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify , request
+from flask import Flask, render_template, jsonify , request, send_from_directory
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -157,7 +157,12 @@ def get_data():
         return dados[moeda_formatada]
     else:
         print("Erro ao fazer a requisição:", response.status_code)
+#ROTA À ASSETS recupera arquivos
 
+@app.route('/assets/<path:path>')
+def send_assets(path):
+    return send_from_directory('assets', path)
+      
 # ROTA PRINCIPAL que mostra a página "resulta.html"
 @app.route('/enviar', methods=['POST'])
 def enviar():
