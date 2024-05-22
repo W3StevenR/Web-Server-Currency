@@ -11,6 +11,16 @@
 }
 
 /* Site */
+.card {
+    margin-bottom: 20px;
+}
+
+.btn-edit {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    width: 30%;
+}
+
 .form-container {
     padding: 20px;
 }
@@ -41,3 +51,45 @@
 .botao-editar {
     width: 100%;
 }
+
+/* Classes de Alerta: */
+.valor-acima {
+  border-color: red;
+  border-style: dashed;
+  border-width: 4px;
+  border-radius: 10px;
+
+  animation: animacaoBorderVermelho 2s infinite;
+}
+@keyframes animacaoBorderVermelho {
+    0% {
+      border-color: #ff0000;
+    }
+    50% {
+      border-color: #440202;
+    }
+    100% {
+      border-color: #ff0000;
+    }
+  }
+
+
+.valor-abaixo {
+    border-color: green;
+  border-style: dashed;
+  border-width: 5px;
+  border-radius: 10px;
+
+  animation: animacaoBorderVerde 2s infinite;
+}
+@keyframes animacaoBorderVerde {
+    0% {
+      border-color: #06e824;
+    }
+    50% {
+      border-color: #025e0f;
+    }
+    100% {
+      border-color: #06e824;
+    }
+  }
