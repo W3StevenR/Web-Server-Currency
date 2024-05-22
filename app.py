@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np    
+from matplotlib.patches import Rectangle
 
 app = Flask(__name__)
 
@@ -75,54 +77,68 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
 
 
 def plotaSalvaGraficos(df):
-    # tamanho da figura em polegadas
-    fig = plt.figure(figsize=(15, 6))
-
-    # "up" dataframe will store the stock_prices
-    # when the closing stock price is greater
-    # than or equal to the opening stock prices
+    
+    n = 6
+    
+    fig, ax = plt.subplots(figsize=(n, n))
     df['bid'] = pd.to_numeric(df['bid'])
+    label_dias = np.arange(len(df['bid']))
     df['varBid'] = pd.to_numeric(df['varBid'])
-    up = df[df.high >= df.bid]
+    # Set the color scheme
+    col_up = 'green'
+    col_down = 'red'
 
-    # "down" dataframe will store the df
-    # when the closing stock price is
-    # lesser than the opening stock prices
-    down = df[df.high < df.bid]
+    # GRAFICO DE VELA
+    for idx, row in df.iterrows():
+        if row['Close'] >= row['Open']:
+            color = col_up
+            lower = row['Open']
+            height = row['Close'] - row['Open']
+        else:
+            color = col_down
+            lower = row['Close']
+            height = row['Open'] - row['Close']
 
-    # When the stock prices have decreased, then it
-    # will be represented by blue color candlestick
-    col1 = 'red'
+        # Plot the candle body
+        ax.add_patch(Rectangle((idx, lower), 1, height, color=color, alpha=0.7))
 
-    # When the stock prices have increased, then it
-    # will be represented by green color candlestick
-    col2 = 'green'
+        # Plot the wicks
+        ax.plot([idx, idx], [row['Low'], row['High']], color='black', linewidth=0.6)
+        ax.plot([idx, idx], [row['Low'], lower], color=color, linewidth=0.6)
+        ax.plot([idx, idx], [row['High'], lower + height], color=color, linewidth=0.6)
 
-    # Setting width of candlestick elements
-    width = .3
-    width2 = .03
+    # Formatting the x-axis
+    ax.set_xticks(range(0, len(df.index), 5))
+    #ax.set_xticklabels(df.index.strftime('%Y-%m-%d')[::5], rotation=45, ha='right')
 
-    # Plotting up prices of the stock
-    plt.bar(up.index, up.high - up.bid, width, bottom=up.bid, color=col1)
-    plt.bar(up.index, up.high - up.high, width2, bottom=up.high, color=col1)
-    plt.bar(up.index, up.low - up.bid, width2, bottom=up.bid, color=col1)
+    # Adding grid
+    ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.7)
 
-    # Plotting down prices of the stock
-    plt.bar(down.index, down.high - down.bid, width, bottom=down.bid, color=col2)
-    plt.bar(down.index, down.high - down.bid, width2, bottom=down.bid, color=col2)
-    plt.bar(down.index, down.low - down.high, width2, bottom=down.high, color=col2)
+    # Adding title and labels
+    ax.set_xlabel('Data', fontsize=12)
+    ax.set_ylabel('Preço', fontsize=12)
 
-    # rotating the x-axis tick labels at 30degree
-    # towards right
-    plt.xticks(rotation=30, ha='right')
+    # Display the plot
+    plt.tight_layout()
 
+    # Rotating the x-axis tick labels at 30 degrees towards the right
+    plt.xticks(label_dias, rotation=30, ha='right')
     # displaying candlestick chart of stock data
     # of a week
 
-    plt.plot(df)
+    
     # Save the figure to a BytesIO object
     path_save = os.path.join("assets", "grafico1.png")
+    fig.savefig(path_save, format='png')
 
+    #grafico de linhas ligadas
+    fig = plt.figure(figsize=(10, 6.0))
+    plt.plot(label_dias, df['bid'], label='MAE_H', color='darkorange')
+    
+    plt.xlabel('Indice')
+    plt.xticks(label_dias)
+    plt.ylabel('Erro(Δ)')
+    path_save = os.path.join("assets", "grafico2.png")
     fig.savefig(path_save, format='png')
 
     return 1
