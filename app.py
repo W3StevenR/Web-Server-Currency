@@ -10,11 +10,11 @@ import pandas as pd
 app = Flask(__name__)
 
 
-# Funcao que realiza uma requisicao de API baseado na escolha de uma moeda:
+# Função que realiza uma requisição de API baseado na escolha de uma moeda:
 def calcular_dias_periodo(data_inicio, data_fim):
   # Converter as strings de data no formato dd/mm/yyyy para objetos datetime
-  inicio = datetime.strptime(data_inicio, f'%d/%m/%Y')
-  fim = datetime.strptime(data_fim, f'%d/%m/%Y')
+  inicio = datetime.strptime(data_inicio, '%d/%m/%Y')
+  fim = datetime.strptime(data_fim, '%d/%m/%Y')
 
   # Calcular a diferença entre as duas datas
   diferenca = fim - inicio
@@ -45,11 +45,10 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
   bids = []
   timestamps = []
 
-  # Iterar sobre cada item e extrair os dados especificos
+  # Iterar sobre cada item e extrair os dados específicos
   prev_close = None
   opens = list()
   for item in root.findall('item'):
-
     high = float(item.find('high').text)
     low = float(item.find('low').text)
     varBid = item.find('varBid').text
@@ -85,67 +84,65 @@ def retornaHistoricoMoeda(moeda, quantd_dias):
   return df
 
 
-def plotaSalvaGraficos(df):
-  # Convert relevant columns to numeric
+def plotaSalvaGraficos(df, cambio):
+  # Converter colunas relevantes para numérico
   df['open'] = pd.to_numeric(df['open'])
   df['close'] = pd.to_numeric(df['close'])
   df['high'] = pd.to_numeric(df['high'])
   df['low'] = pd.to_numeric(df['low'])
   df['varBid'] = pd.to_numeric(df['varBid'])
 
-  # Determine the days when stock price went up or down
+  # Determinar os dias em que o preço da ação subiu ou desceu
   up = df[df['close'] >= df['open']]
   down = df[df['close'] < df['open']]
 
-  # Colors for up and down days
+  # Cores para dias de alta e baixa
   col1 = 'green'
   col2 = 'red'
 
-  # Setting width of candlestick elements
+  # Definindo a largura dos elementos do candlestick
   width = 0.3
   width2 = 0.02
 
   fig, ax = plt.subplots(figsize=(10, 6))
 
-  # Plotting up prices of the stock
+  # Plotando preços de alta da ação
   ax.bar(up.index, up['close'] - up['open'], width, bottom=up['open'], color=col1, edgecolor='black')
 
-  # Plotting down prices of the stock
+  # Plotando preços de baixa da ação
   ax.bar(down.index, down['open'] - down['close'], width, bottom=down['close'], color=col2, edgecolor='black')
 
-  # Plotting the high-low wicks
+  # Plotando os pavios de alta-baixa
   '''for idx in df.index:
-        ax.plot([idx, idx], [df.loc[idx, 'low'], df.loc[idx, 'high']], color='black')'''
+      ax.plot([idx, idx], [df.loc[idx, 'low'], df.loc[idx, 'high']], color='black')'''
 
-  # Setting titles and labels
-  ax.set_title('Candlestick Chart')
-  ax.set_xlabel('Date')
-  ax.set_ylabel('Price')
+  # Definindo títulos e rótulos
+  ax.set_title(f"Gráfico de Vela ({cambio})")
+  ax.set_xlabel('Data')
+  ax.set_ylabel('Preço')
 
-  # Formatting the x-axis to show dates properly
-  ax.set_xticks(df.index)
-  ax.set_xticklabels(df['timestamp'].dt.strftime('%Y-%m-%d'), rotation=45, ha='right')
+  # Formatando o eixo x para mostrar datas corretamente
+  ax.set_xticklabels(df['timestamp'].dt.strftime('%Y-%m-%d'), ha='right')
 
-  # Setting titles and labels
-  ax.set_title('Candlestick Chart')
-  ax.set_xlabel('Date')
-  ax.set_ylabel('Price')
-
-  # Formatting the x-axis to show dates properly
-  ax.set_xticks(df.index)
-  ax.set_xticklabels(df['timestamp'].dt.strftime('%Y-%m-%d'), rotation=45, ha='right')
   plt.tight_layout()
 
   path_save = os.path.join("assets", "grafico1.png")
+  # fim grafico 1
 
   fig.savefig(path_save, format='png')
 
   fig, aux = plt.subplots(figsize=(10, 6))
   plt.plot(df['timestamp'], df['close'], color='darkorange')
-  plt.xlabel('Indice')
-  plt.xticks(df['timestamp'])
-  path_save = os.path.join("assets", "grafico2.png")
+  ax.set_xlabel('Data')
+  ax.set_ylabel('Preço')
+  base_font_size = 10
 
+  if len(df['timestamp']) >= 30:
+    base_font_size = base_font_size / (len(df['timestamp']) // 2)
+    # Definindo o tamanho da fonte para os rótulos do eixo x
+    plt.setp(ax.get_xticklabels(), fontsize=base_font_size)
+
+  path_save = os.path.join("assets", "grafico2.png")
   fig.savefig(path_save, format='png')
 
   return 1
@@ -158,7 +155,7 @@ def index():
 
 @app.route('/get_data')
 def get_data():
-  # Pedir para o usuario passar um parametro na requisicao "?moeda=MOEDA" para que eu possa requisitar na API
+  # Pedir para o usuário passar um parâmetro na requisição "?moeda=MOEDA" para que eu possa requisitar na API
   moeda = request.args.get('moeda')
 
   # Faz uma requisição para a API
@@ -171,36 +168,37 @@ def get_data():
     print("Erro ao fazer a requisição:", response.status_code)
 
 
-#Rota que recupera arquivos da pasta "assets"
+# Rota que recupera arquivos da pasta "assets"
 @app.route('/assets/<path:path>')
 def send_assets(path):
   return send_from_directory('assets', path)
 
 
-# ROTA PRINCIPAL que mostra a página "resulta.html"
+# ROTA PRINCIPAL que mostra a página "resultado.html"
 @app.route('/enviar', methods=['POST'])
 def enviar():
-  # Pegar valor enviados no formulario
+  # Pegar valor enviados no formulário
   moeda = request.form['moeda']
   data_inicio = request.form['data_inicio']
   data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
-  data_fim = datetime.now().strftime('%d/%m/%Y')  #INPUT ESTATICO
+  data_fim = datetime.now().strftime('%d/%m/%Y')  # INPUT ESTÁTICO
 
   valor_alerta = float(request.form['valor_alerta'])
 
-  # Realizar uma requisicao baseado em uma moeda escolhida
+  # Realizar uma requisição baseado em uma moeda escolhida
   requisicao = realizaReqCambio(moeda)
 
-  # Retorna um DataFrame com o histórico que o usuario solicitou
+  # Retorna um DataFrame com o histórico que o usuário solicitou
   dadosTxCambio = retornaHistoricoMoeda(moeda, calcular_dias_periodo(data_inicio, data_fim))
 
   # Salva os gráficos
-  plotaSalvaGraficos(dadosTxCambio)
+  plotaSalvaGraficos(dadosTxCambio, moeda)
 
-  # Ao renderizar a pagina "resultado.html" eu passo a variavel moeda como parametro , para que eu possa realizar a rota "/get_data"
-  # usando como parâmetro para requisicao essa própria variavel "moeda" , salvando esse valor enquanto navego entre as paginas
+  # Ao renderizar a página "resultado.html" eu passo a variável moeda como parâmetro, para que eu possa realizar a rota "/get_data"
+  # usando como parâmetro para requisição essa própria variável "moeda", salvando esse valor enquanto navego entre as páginas
   return render_template("resultado.html", moeda=moeda, valor_alerta=valor_alerta)
 
 
+
 if __name__ == '__main__':
-  app.run(debug=True)
+    app.run(debug=True)
